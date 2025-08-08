@@ -17,26 +17,27 @@ module ARM_CPU
   output control_memwrite_out,
   output control_memread_out
 );
+	/* Stage : Instruction Fetch */
+  wire PCSrc_wire;
+  wire [63:0] jump_PC_wire;
+  wire [63:0] IFID_PC;
+  wire [31:0] IFID_IC;
 	wire Hazard_PCWrite;
 	wire Hazard_IFIDWrite;
 
 	always @(posedge CLOCK) begin
 		if (Hazard_PCWrite !== 1'b1) begin
 			 if (PC === 64'bx) begin
-				PC <= 0;
-			 end else if (PCSrc_wire == 1'b1) begin
-				PC <= jump_PC_wire;
-			 end else begin
-				PC <= PC + 4;
-		end
-	 end
+				  PC <= 0;
+				end else if (predicted_taken == 1'b1) begin
+				  PC <= jump_PC_wire; // use predicted target
+				end else begin
+				  PC <= PC + 4;
+				end
+	 	end
 	end
 
-  /* Stage : Instruction Fetch */
-  wire PCSrc_wire;
-  wire [63:0] jump_PC_wire;
-  wire [63:0] IFID_PC;
-  wire [31:0] IFID_IC;
+  
   IFID cache1 (CLOCK, PC, IC, Hazard_IFIDWrite, IFID_PC, IFID_IC);
 
 
@@ -132,11 +133,39 @@ module ARM_CPU
 
 
   /* Stage : Memory */
-  Branch unit8 (EXMEM_isUnconBranch, EXMEM_isZeroBranch, EXMEM_alu_zero, PCSrc_wire);
+  wire actual_taken;
+  assign actual_taken = (EXMEM_isUnconBranch | (EXMEM_isZeroBranch & EXMEM_alu_zero));
+  wire update_predictor;
+  assign update_predictor = 1'b1; // You always update the predictor when a branch instruction reaches MEM
+
+
 
   wire [63:0] MEMWB_address;
   wire [63:0] MEMWB_read_data;
   MEMWB cache4(CLOCK, mem_address_out, mem_data_in, EXMEM_write_reg, EXMEM_regwrite, EXMEM_mem2reg, MEMWB_address, MEMWB_read_data, MEMWB_write_reg, MEMWB_regwrite, MEMWB_mem2reg);
+  
+	wire predicted_taken;
+  wire [1:0] predictor_choice;
+	
+  HybridBranchPredictor predictor (
+    .clk(CLOCK),
+    .reset(RESET),  // If you don’t have one, tie it to 0
+    .pc(PC), // The current PC
+    .actual_taken(actual_taken), // Wire from MEM stage (later)
+    .update(update_predictor),   // Wire from MEM stage (later)
+    .predict(predicted_taken),
+    .predictor_choice(predictor_choice)
+);
+	HybridBranchPredictor predictor (
+  .clk(CLOCK),
+  .reset(RESET),                // 
+  .pc(PC),                     // Instruction fetch PC
+  .actual_taken(actual_taken),// From EXMEM branch resolve
+  .update(update_predictor),  // Always true
+  .predict(predicted_taken),  // Result used in IF stage
+  .predictor_choice(predictor_choice) // Optional: show which predictor made the decision
+);
+
 
 
   /* Stage : Writeback */
@@ -822,3 +851,4 @@ module ARM_Control
     end
   end
 endmodule
+

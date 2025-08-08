@@ -24,6 +24,7 @@ module ARM_CPU
   wire [31:0] IFID_IC;
 	wire Hazard_PCWrite;
 	wire Hazard_IFIDWrite;
+	wire predicted_taken;
 
 	always @(posedge CLOCK) begin
 		if (Hazard_PCWrite !== 1'b1) begin
@@ -144,18 +145,9 @@ module ARM_CPU
   wire [63:0] MEMWB_read_data;
   MEMWB cache4(CLOCK, mem_address_out, mem_data_in, EXMEM_write_reg, EXMEM_regwrite, EXMEM_mem2reg, MEMWB_address, MEMWB_read_data, MEMWB_write_reg, MEMWB_regwrite, MEMWB_mem2reg);
   
-	wire predicted_taken;
+	
   wire [1:0] predictor_choice;
 	
-  HybridBranchPredictor predictor (
-    .clk(CLOCK),
-    .reset(RESET),  // If you don’t have one, tie it to 0
-    .pc(PC), // The current PC
-    .actual_taken(actual_taken), // Wire from MEM stage (later)
-    .update(update_predictor),   // Wire from MEM stage (later)
-    .predict(predicted_taken),
-    .predictor_choice(predictor_choice)
-);
 	HybridBranchPredictor predictor (
   .clk(CLOCK),
   .reset(RESET),                // 
@@ -851,5 +843,6 @@ module ARM_Control
     end
   end
 endmodule
+
 
 

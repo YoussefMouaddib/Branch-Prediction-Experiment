@@ -434,35 +434,28 @@ module IC
   reg [8:0] Data[63:0];
 
   initial begin
-    // LDUR x0, [x2, #3]
-    Data[0] = 8'hf8; Data[1] = 8'h40; Data[2] = 8'h30; Data[3] = 8'h40;
+    // ADDI X1, XZR, #3	0x11000C61
+	  Data[0] = 8'h11; Data[1] = 8'h00; Data[2] = 8'h0C; Data[3] = 8'h61;
 
-    // ADD x9, x0, x5
-    Data[4] = 8'h8b; Data[5] = 8'h05; Data[6] = 8'h00; Data[7] = 8'h09;
+    // SUB X1, X1, #1	0x51000421
+	  Data[4] = 8'h51; Data[5] = 8'h00; Data[6] = 8'h04; Data[7] = 8'h21;
 
-    // ORR x10, x1, x9
-    Data[8] = 8'haa; Data[9] = 8'h09; Data[10] = 8'h00; Data[11] = 8'h2a;
+    // CBZ X1, #2	0xB4000401
+	  Data[8] = 8'hb4; Data[9] = 8'h00; Data[10] = 8'h04; Data[11] = 8'h01;
 
-    // AND x11, x9, x0
-    Data[12] = 8'h8a; Data[13] = 8'h00; Data[14] = 8'h01; Data[15] = 8'h2b;
+    // ADDI X5, XZR, #5	0x110014A5
+	  Data[12] = 8'h11; Data[13] = 8'h00; Data[14] = 8'h14; Data[15] = 8'ha5;
 
-    // SUB x12 x0 x11
-    Data[16] = 8'hcb; Data[17] = 8'h0b; Data[18] = 8'h00; Data[19] = 8'h0c;
+    // SUB X5, X5, #1	0x510004A5
+	  Data[16] = 8'h51; Data[17] = 8'h00; Data[18] = 8'h04; Data[19] = 8'ha5;
 
-    // STUR x9, [x3, #6]
-    Data[20] = 8'hf8; Data[21] = 8'h00; Data[22] = 8'h60; Data[23] = 8'h69;
+    // CBZ X5, #2	0xB4000405
+	  Data[20] = 8'hb4; Data[21] = 8'h00; Data[22] = 8'h04; Data[23] = 8'h05;
 
-    // STUR x10, [x4, #6]
-    Data[24] = 8'hf8; Data[25] = 8'h00; Data[26] = 8'h60; Data[27] = 8'h8a;
+    // ADD X0, X0, XZR	0x8B1F0000
+	  Data[24] = 8'h8b; Data[25] = 8'h1f; Data[26] = 8'h00; Data[27] = 8'h00;
 
-    // STUR x11, [x5, #6]
-    Data[28] = 8'hf8; Data[29] = 8'h00; Data[30] = 8'h60; Data[31] = 8'hab;
-
-    // STUR x12, [x6, #6]
-    Data[32] = 8'hf8; Data[33] = 8'h00; Data[34] = 8'h60; Data[35] = 8'hcc;
-
-    // B #10
-    Data[36] = 8'h14; Data[37] = 8'h00; Data[38] = 8'h00; Data[39] = 8'h0a;
+   
   end
 
   always @(PC_in) begin
@@ -843,6 +836,7 @@ module ARM_Control
     end
   end
 endmodule
+
 
 
 

@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 /*
-  	Group Members: Ralph Quinto and Warren Seto
-  	Lab Name: ARM LEGv8 CPU Design (Pipelined, Hazard Detection, and Forwarding Unit)
+  	Group Members: le zabbb
+  	Lab Name: LEGv8 w/ hybrid branch predictor
 */
 
 module ARM_CPU
@@ -851,4 +851,5 @@ module ARM_Control
     end
   end
 endmodule
+
 
